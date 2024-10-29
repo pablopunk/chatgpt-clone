@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@keyframes neonPulse {
+  0% {
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+  }
+  33% {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+  }
+  66% {
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffff00;
+  }
+  100% {
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+  }
+}
+
+.loading-neon {
+  animation: neonPulse 2s infinite;
+  font-weight: bold;
+  font-size: 1.25rem;
+}
