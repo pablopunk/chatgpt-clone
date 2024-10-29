@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus, MessageSquare, Settings, Trash } from 'lucide-react';
 import { Chat } from '../types';
 import SettingsModal from './SettingsModal';
+import ChatListModal from './ChatListModal';
 
 interface SidebarProps {
   chats: Chat[];
@@ -26,12 +27,14 @@ export default function Sidebar({
   setTheme,
   onRemoveChat,
 }: SidebarProps) {
-  const [showApiKey, setShowApiKey] = React.useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+  const [isChatListModalOpen, setIsChatListModalOpen] = React.useState(false);
+
+  const currentChat = chats.find((chat) => chat.id === currentChatId);
 
   return (
-    <div className="w-64 md:w-64 bg-gray-200 dark:bg-gray-800 h-screen flex flex-col">
-      <div className="flex flex-row justify-between m-2">
+    <div className="w-full md:w-64 bg-gray-200 dark:bg-gray-800 h-screen flex flex-col">
+      <div className="flex flex-row justify-between items-center m-2">
         <button
           onClick={onNewChat}
           className="p-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-sm rounded-md flex items-center gap-2 hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
@@ -39,6 +42,19 @@ export default function Sidebar({
           <Plus size={20} />
           New Chat
         </button>
+
+        {/* Mobile: Current Chat Title Button */}
+        {currentChat && (
+          <button
+            onClick={() => setIsChatListModalOpen(true)}
+            className="p-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-sm rounded-md flex items-center gap-2 mx-2 hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors block md:hidden"
+          >
+            <span className="truncate max-w-[100px]" title={currentChat.title || 'New Chat'}>
+              {currentChat.title || 'New Chat'}
+            </span>
+          </button>
+        )}
+
         <button
           onClick={() => setIsSettingsModalOpen(true)}
           className="p-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white flex items-center gap-2 hover:bg-gray-400 dark:hover:bg-gray-600 rounded-md transition-colors"
@@ -47,7 +63,8 @@ export default function Sidebar({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Desktop Chat List */}
+      <div className="flex-1 overflow-y-auto hidden md:block">
         {chats.map((chat) => (
           <div
             key={chat.id}
@@ -81,6 +98,16 @@ export default function Sidebar({
         onApiKeyUpdate={onApiKeyUpdate}
         theme={theme}
         setTheme={setTheme}
+      />
+
+      {/* Chat List Modal for Mobile */}
+      <ChatListModal
+        isOpen={isChatListModalOpen}
+        onClose={() => setIsChatListModalOpen(false)}
+        chats={chats}
+        currentChatId={currentChatId}
+        onChatSelect={onChatSelect}
+        onRemoveChat={onRemoveChat}
       />
     </div>
   );
