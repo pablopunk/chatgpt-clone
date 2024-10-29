@@ -228,6 +228,14 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  const handleRemoveChat = (chatId: string) => {
+    setState((prev) => ({
+      ...prev,
+      chats: prev.chats.filter((chat) => chat.id !== chatId),
+      currentChatId: prev.currentChatId === chatId ? null : prev.currentChatId,
+    }));
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar
@@ -239,6 +247,7 @@ function App() {
         apiKey={state.apiKey}
         theme={theme}
         setTheme={setTheme}
+        onRemoveChat={handleRemoveChat}
       />
       <ChatArea
         chat={currentChat}
