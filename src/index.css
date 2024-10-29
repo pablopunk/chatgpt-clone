@@ -43,3 +43,25 @@
   font-weight: bold;
   font-size: 1.25rem;
 }
+
+@media (max-width: 768px) {
+  .h-screen {
+    height: auto;
+  }
+
+  .w-64 {
+    width: 100%;
+  }
+
+  .p-4 {
+    padding: 1rem;
+  }
+
+  .border-b {
+    border-bottom-width: 1px;
+  }
+
+  .border-t {
+    border-top-width: 1px;
+  }
+}

@@ -96,7 +96,7 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
       </div>
 
       <div className="p-4 border-t">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="text"
             value={input}
