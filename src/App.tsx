@@ -182,8 +182,40 @@ function App() {
     }));
   };
 
+  // Add theme state
+  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system');
+
+  // Load theme from localStorage on mount
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  // Apply theme to document root
+  React.useEffect(() => {
+    const root = document.documentElement;
+
+    // Remove all theme classes
+    root.classList.remove('light', 'dark');
+
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      // 'system' preference
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.add(systemDark ? 'dark' : 'light');
+    }
+
+    // Save theme to localStorage
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar
         chats={state.chats}
         currentChatId={state.currentChatId}
@@ -191,6 +223,8 @@ function App() {
         onNewChat={createNewChat}
         onApiKeyUpdate={(apiKey) => setState((prev) => ({ ...prev, apiKey }))}
         apiKey={state.apiKey}
+        theme={theme}
+        setTheme={setTheme}
       />
       <ChatArea
         chat={currentChat}

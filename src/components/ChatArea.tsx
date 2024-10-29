@@ -49,19 +49,19 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
   const displayMessages = chat.messages.slice(1);
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
-      <div className="p-4 border-b">
+    <div className="flex-1 flex flex-col h-screen bg-white dark:bg-gray-900">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <select
           value={chat.model}
           onChange={(e) => onModelChange(e.target.value as 'gpt-4o' | 'gpt-4o-mini')}
-          className="bg-white border rounded-md px-2 py-1"
+          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1 text-black dark:text-white"
         >
           <option value="gpt-4o">gpt-4o</option>
           <option value="gpt-4o-mini">gpt-4o mini</option>
         </select>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900">
         {displayMessages.map((message, index) => (
           <div
             key={index}
@@ -72,7 +72,7 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
             <div
               className={`max-w-[80%] p-3 rounded-lg ${
                 message.role === 'assistant'
-                  ? 'bg-gray-200'
+                  ? 'bg-gray-200 dark:bg-gray-700 text-black dark:text-white'
                   : 'bg-blue-500 text-white'
               }`}
             >
@@ -95,7 +95,7 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -103,8 +103,8 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
             onChange={handleInputChange}
             onKeyPress={(e) => e.key === 'Enter' && handleSubmit('text')}
             placeholder={isError ? "Empty message" : "Type your message..."}
-            className={`flex-1 p-2 border rounded-md ${
-              isError ? 'border-red-500 placeholder-red-500' : ''
+            className={`flex-1 p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-black dark:text-white ${
+              isError ? 'border-red-500 placeholder-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
           />
           <button
