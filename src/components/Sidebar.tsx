@@ -33,7 +33,7 @@ export default function Sidebar({
   const currentChat = chats.find((chat) => chat.id === currentChatId);
 
   return (
-    <div className="w-full md:w-64 bg-gray-200 dark:bg-gray-800 h-screen flex flex-col">
+    <div className="w-full bg-gray-200 dark:bg-gray-800 flex flex-col md:w-64 md:h-screen">
       <div className="flex flex-row justify-between items-center m-2">
         <button
           onClick={onNewChat}
@@ -47,7 +47,7 @@ export default function Sidebar({
         {currentChat && (
           <button
             onClick={() => setIsChatListModalOpen(true)}
-            className="p-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-sm rounded-md flex items-center gap-2 mx-2 hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors block md:hidden"
+            className="p-2 font-bold text-black dark:text-white text-sm rounded-md flex items-center gap-2 mx-2 hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors md:hidden"
           >
             <span className="truncate max-w-[100px]" title={currentChat.title || 'New Chat'}>
               {currentChat.title || 'New Chat'}

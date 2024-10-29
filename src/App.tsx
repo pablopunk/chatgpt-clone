@@ -237,7 +237,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 md:flex-row">
       <Sidebar
         chats={state.chats}
         currentChatId={state.currentChatId}

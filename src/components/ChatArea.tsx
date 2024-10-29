@@ -49,7 +49,7 @@ export default function ChatArea({ chat, onSendMessage, onModelChange }: ChatAre
   const displayMessages = chat.messages.slice(1);
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col h-screen bg-white dark:bg-gray-900 md:h-auto">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <select
           value={chat.model}
