@@ -8,6 +8,7 @@ interface SettingsModalProps {
   onApiKeyUpdate: (key: string) => void;
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  errorMessage?: string;
 }
 
 export default function SettingsModal({
@@ -17,6 +18,7 @@ export default function SettingsModal({
   onApiKeyUpdate,
   theme,
   setTheme,
+  errorMessage,
 }: SettingsModalProps) {
   if (!isOpen) return null;
 
@@ -25,14 +27,19 @@ export default function SettingsModal({
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-80">
         <h2 className="text-lg font-bold mb-4 text-black dark:text-white">Settings</h2>
 
-        {/* API Key Input */}
+        {errorMessage && (
+          <div className="mb-4 text-red-500">{errorMessage}</div>
+        )}
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1 text-black dark:text-white">API Key</label>
           <input
             type="password"
             value={apiKey || ''}
             onChange={(e) => onApiKeyUpdate(e.target.value)}
-            className="w-full p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+            className={`w-full p-2 border rounded-md bg-gray-100 dark:bg-gray-700 text-black dark:text-white ${
+              errorMessage ? 'border-red-500' : ''
+            }`}
           />
         </div>
 
@@ -67,7 +74,6 @@ export default function SettingsModal({
           </div>
         </div>
 
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="mt-4 w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"

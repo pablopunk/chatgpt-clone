@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import { Chat, ChatState, Message } from './types';
+import SettingsModal from './components/SettingsModal';
 
 const STORAGE_KEY = 'chatgpt-client-state';
 
@@ -19,6 +20,9 @@ function App() {
     return saved ? JSON.parse(saved) : initialState;
   });
 
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+  const [settingsError, setSettingsError] = React.useState('');
+
   React.useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
@@ -26,6 +30,12 @@ function App() {
   const currentChat = state.chats.find((chat) => chat.id === state.currentChatId);
 
   const createNewChat = () => {
+    if (!state.apiKey) {
+      setSettingsError('API key is required to create a new chat.');
+      setIsSettingsModalOpen(true);
+      return;
+    }
+
     const newChat: Chat = {
       id: nanoid(),
       title: 'New Chat',
@@ -45,7 +55,11 @@ function App() {
   };
 
   const handleSendMessage = async (content: string, type: 'text' | 'image') => {
-    if (!state.apiKey || !currentChat) return;
+    if (!state.apiKey || !currentChat) {
+      setSettingsError('API key is required to send messages.');
+      setIsSettingsModalOpen(true);
+      return;
+    }
 
     const openai = new OpenAI({
       apiKey: state.apiKey,
@@ -230,6 +244,15 @@ function App() {
         chat={currentChat}
         onSendMessage={handleSendMessage}
         onModelChange={handleModelChange}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        apiKey={state.apiKey}
+        onApiKeyUpdate={(apiKey) => setState((prev) => ({ ...prev, apiKey }))}
+        theme={theme}
+        setTheme={setTheme}
+        errorMessage={settingsError}
       />
     </div>
   );
