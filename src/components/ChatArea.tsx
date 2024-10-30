@@ -1,6 +1,9 @@
-import { Image, Plus, Send } from "lucide-react";
+import { Copy, Image, Plus, Send } from "lucide-react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import type { Chat } from "../types";
 
 interface ChatAreaProps {
@@ -9,6 +12,7 @@ interface ChatAreaProps {
 	onSendMessage: (content: string, type: "text" | "image") => void;
 	onModelChange: (model: "gpt-4o" | "gpt-4o-mini") => void;
 	onNewChat: () => void;
+	theme: "light" | "dark" | "system";
 }
 
 export default function ChatArea({
@@ -17,10 +21,12 @@ export default function ChatArea({
 	onSendMessage,
 	onModelChange,
 	onNewChat,
+	theme,
 }: ChatAreaProps) {
 	const [input, setInput] = React.useState("");
 	const [isError, setIsError] = React.useState(false);
 	const messagesEndRef = React.useRef<HTMLDivElement>(null);
+	const [copySuccess, setCopySuccess] = React.useState("");
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,6 +36,24 @@ export default function ChatArea({
 	React.useEffect(() => {
 		scrollToBottom();
 	}, [chat?.messages]);
+
+	const effectiveTheme = React.useMemo(() => {
+		if (theme === "system") {
+			const systemPrefersDark = window.matchMedia(
+				"(prefers-color-scheme: dark)",
+			).matches;
+			return systemPrefersDark ? "dark" : "light";
+		}
+		return theme;
+	}, [theme]);
+
+	const handleCopy = (text: string) => {
+		navigator.clipboard.writeText(text).then(
+			() => setCopySuccess("Copied!"),
+			() => setCopySuccess("Failed to copy!"),
+		);
+		setTimeout(() => setCopySuccess(""), 2000); // Clear message after 2 seconds
+	};
 
 	if (!chat) {
 		return (
@@ -106,7 +130,51 @@ export default function ChatArea({
 									className="rounded-lg max-w-full h-auto"
 								/>
 							) : message.content ? (
-								<ReactMarkdown>{message.content}</ReactMarkdown>
+								<ReactMarkdown
+									components={{
+										code({ node, inline, className, children, ...props }) {
+											const match = /language-(\w+)/.exec(className || "");
+											const codeContent = String(children).replace(/\n$/, "");
+											const syntaxTheme =
+												effectiveTheme === "dark" ? vs2015 : docco;
+
+											if (inline || !match) {
+												return (
+													<code className={className} {...props}>
+														{children}
+													</code>
+												);
+											}
+											return (
+												<div className="relative">
+													<button
+														type="button"
+														className="absolute top-2 right-2 p-1 text-sm rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+														onClick={() => handleCopy(codeContent)}
+														title="Copy code to clipboard"
+														aria-label="Copy code to clipboard"
+													>
+														{copySuccess ? (
+															`✓ ${copySuccess}`
+														) : (
+															<Copy size={16} />
+														)}
+													</button>
+													<SyntaxHighlighter
+														style={syntaxTheme}
+														language={match[1]}
+														PreTag="div"
+														{...props}
+													>
+														{codeContent}
+													</SyntaxHighlighter>
+												</div>
+											);
+										},
+									}}
+								>
+									{message.content}
+								</ReactMarkdown>
 							) : (
 								<div className={message.type === "image" ? "loading-neon" : ""}>
 									{message.type === "image"

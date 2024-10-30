@@ -311,6 +311,7 @@ function App() {
 				onSendMessage={handleSendMessage}
 				onModelChange={handleModelChange}
 				onNewChat={() => createNewChat(true)}
+				theme={theme}
 			/>
 			<SettingsModal
 				isOpen={isSettingsModalOpen}
