@@ -1,10 +1,11 @@
 import { Image, Plus, Send } from "lucide-react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { type Chat, Message } from "../types";
+import type { Chat } from "../types";
 
 interface ChatAreaProps {
 	chat: Chat | null;
+	chats: Chat[];
 	onSendMessage: (content: string, type: "text" | "image") => void;
 	onModelChange: (model: "gpt-4o" | "gpt-4o-mini") => void;
 	onNewChat: () => void;
@@ -12,6 +13,7 @@ interface ChatAreaProps {
 
 export default function ChatArea({
 	chat,
+	chats,
 	onSendMessage,
 	onModelChange,
 	onNewChat,
@@ -24,13 +26,19 @@ export default function ChatArea({
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	React.useEffect(() => {
 		scrollToBottom();
 	}, [chat?.messages]);
 
 	if (!chat) {
 		return (
-			<div className="flex-1 flex items-center justify-center">
+			<div className="flex-1 flex flex-col items-center justify-center">
+				{chats.length > 0 && (
+					<p className="text-gray-600 dark:text-gray-400 mb-4">
+						Select a chat from the list or
+					</p>
+				)}
 				<button
 					type="button"
 					onClick={onNewChat}
@@ -79,7 +87,7 @@ export default function ChatArea({
 			<div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900">
 				{displayMessages.map((message, index) => (
 					<div
-						key={index}
+						key={`${message.role}-${message.content?.substring(0, 10)}-${index}`}
 						className={`flex ${
 							message.role === "assistant" ? "justify-start" : "justify-end"
 						}`}
@@ -127,12 +135,14 @@ export default function ChatArea({
 						}`}
 					/>
 					<button
+						type="button"
 						onClick={() => handleSubmit("image")}
 						className="p-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
 					>
 						<Image size={20} />
 					</button>
 					<button
+						type="button"
 						onClick={() => handleSubmit("text")}
 						className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
 					>

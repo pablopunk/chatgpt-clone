@@ -27,9 +27,8 @@ function App() {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 	}, [state]);
 
-	const currentChat = state.chats.find(
-		(chat) => chat.id === state.currentChatId,
-	);
+	const currentChat =
+		state.chats.find((chat) => chat.id === state.currentChatId) || null;
 
 	const createNewChat = (setAsCurrent = true) => {
 		if (!state.apiKey) {
