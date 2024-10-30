@@ -13,3 +13,9 @@ export interface Chat {
   model: 'gpt-4o' | 'gpt-4o-mini';
   createdAt: number;
 }
+
+export interface ChatState {
+  chats: Chat[];
+  currentChatId: string | null;
+  apiKey: string | null;
+}
