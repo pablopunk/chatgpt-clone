@@ -2,8 +2,8 @@ import { Copy, Image, Plus, Send } from "lucide-react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import docco from "react-syntax-highlighter/dist/cjs/styles/hljs/docco";
+import vs2015 from "react-syntax-highlighter/dist/cjs/styles/hljs/vs2015";
 import type { Chat } from "../types";
 
 interface ChatAreaProps {
