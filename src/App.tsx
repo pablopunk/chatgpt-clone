@@ -72,12 +72,13 @@ function App() {
 		const newMessage: Message = {
 			role: "user",
 			content,
+			type,
 		};
 
 		// Create a temporary ID for the assistant's message
 		const assistantMessageId = nanoid();
 
-		// Update state with user message and prepare for streaming
+		// Update state with user message and prepare for assistant's response
 		setState((prev) => ({
 			...prev,
 			chats: prev.chats.map((chat) =>
@@ -87,7 +88,6 @@ function App() {
 							messages: [
 								...chat.messages,
 								newMessage,
-								// Add empty assistant message that will be streamed
 								{
 									role: "assistant",
 									content: "",
@@ -103,48 +103,84 @@ function App() {
 		}));
 
 		try {
+			const apiMessages = currentChat.messages.map(({ role, content }) => ({
+				role,
+				content,
+			}));
+
+			apiMessages.push({ role: "user", content });
+
+			// Define function for image generation
+			const functions =
+				type === "image"
+					? [
+							{
+								name: "generate_image",
+								description: "Generates an image based on the conversation",
+								parameters: {
+									type: "object",
+									properties: {
+										prompt: {
+											type: "string",
+											description: "The prompt for the image generation",
+										},
+									},
+									required: ["prompt"],
+								},
+							},
+						]
+					: undefined;
+
+			const completion = await openai.chat.completions.create({
+				model: currentChat.model === "gpt-4o" ? "gpt-4" : "gpt-3.5-turbo",
+				messages: apiMessages,
+				functions,
+				function_call:
+					type === "image" ? { name: "generate_image" } : undefined,
+				stream: type === "text",
+			});
+
 			if (type === "image") {
-				const response = await openai.images.generate({
-					model: "dall-e-3",
-					prompt: content,
-					n: 1,
-					size: "1024x1024",
-				});
+				const functionCall = completion.choices[0].message?.function_call;
+				if (functionCall && functionCall.name === "generate_image") {
+					const functionArgs = JSON.parse(functionCall.arguments || "{}");
+					const imagePrompt = functionArgs.prompt || content;
 
-				setState((prev) => ({
-					...prev,
-					chats: prev.chats.map((chat) =>
-						chat.id === currentChat.id
-							? {
-									...chat,
-									messages: chat.messages.map((msg) =>
-										msg.id === assistantMessageId
-											? {
-													role: "assistant",
-													content: "Here's your generated image:",
-													imageUrl: response.data[0].url,
-													id: assistantMessageId,
-													type,
-												}
-											: msg,
-									),
-								}
-							: chat,
-					),
-				}));
+					// Call the image generation API
+					const response = await openai.images.generate({
+						prompt: imagePrompt,
+						n: 1,
+						size: "1024x1024",
+					});
+
+					const imageUrl = response.data[0].url;
+
+					// Update the assistant's message with the image
+					setState((prev) => ({
+						...prev,
+						chats: prev.chats.map((chat) =>
+							chat.id === currentChat.id
+								? {
+										...chat,
+										messages: chat.messages.map((msg) =>
+											msg.id === assistantMessageId
+												? {
+														...msg,
+														role: "assistant",
+														content: "Here's your generated image:",
+														imageUrl: imageUrl,
+														type,
+													}
+												: msg,
+										),
+									}
+								: chat,
+						),
+					}));
+				}
 			} else {
-				const apiMessages = currentChat.messages.map(({ role, content }) => ({
-					role,
-					content,
-				}));
-
-				apiMessages.push({ role: "user", content });
-
-				const stream = await openai.chat.completions.create({
-					model: currentChat.model === "gpt-4o" ? "gpt-4" : "gpt-3.5-turbo",
-					messages: apiMessages,
-					stream: true,
-				});
+				// Handle streaming text response
+				const stream = completion;
 
 				let streamedContent = "";
 
