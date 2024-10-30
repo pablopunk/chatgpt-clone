@@ -36,6 +36,7 @@ export default function ChatListModal({
 							}`}
 						>
 							<button
+								type="button"
 								onClick={() => {
 									onChatSelect(chat.id);
 									onClose();
@@ -51,6 +52,7 @@ export default function ChatListModal({
 								</span>
 							</button>
 							<button
+								type="button"
 								onClick={() => onRemoveChat(chat.id)}
 								className="p-2 text-black dark:text-white hover:text-red-700 transition-colors"
 							>
@@ -60,6 +62,7 @@ export default function ChatListModal({
 					))}
 				</div>
 				<button
+					type="button"
 					onClick={onClose}
 					className="mt-4 w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
 				>
