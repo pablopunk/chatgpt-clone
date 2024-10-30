@@ -47,6 +47,7 @@ function App() {
 				},
 			],
 			model: "gpt-4o",
+			imageModel: "dall-e-3",
 			createdAt: Date.now(),
 		};
 
@@ -151,6 +152,7 @@ function App() {
 						prompt: imagePrompt,
 						n: 1,
 						size: "1024x1024",
+						model: currentChat.imageModel,
 					});
 
 					const imageUrl = response.data[0].url;
@@ -242,6 +244,17 @@ function App() {
 		}));
 	};
 
+	const handleImageModelChange = (imageModel: "dall-e-2" | "dall-e-3") => {
+		if (!currentChat) return;
+
+		setState((prev) => ({
+			...prev,
+			chats: prev.chats.map((chat) =>
+				chat.id === currentChat.id ? { ...chat, imageModel } : chat,
+			),
+		}));
+	};
+
 	// Add theme state
 	const [theme, setTheme] = React.useState<"light" | "dark" | "system">(
 		"system",
@@ -310,6 +323,7 @@ function App() {
 				chats={state.chats}
 				onSendMessage={handleSendMessage}
 				onModelChange={handleModelChange}
+				onImageModelChange={handleImageModelChange}
 				onNewChat={() => createNewChat(true)}
 				theme={theme}
 			/>

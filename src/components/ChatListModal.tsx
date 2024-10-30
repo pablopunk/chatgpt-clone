@@ -1,5 +1,4 @@
 import { MessageSquare, Trash } from "lucide-react";
-import React from "react";
 import type { Chat } from "../types";
 
 interface ChatListModalProps {

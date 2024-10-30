@@ -11,6 +11,7 @@ export interface Chat {
   title: string;
   messages: Message[];
   model: 'gpt-4o' | 'gpt-4o-mini';
+  imageModel: 'dall-e-2' | 'dall-e-3';
   createdAt: number;
 }
 

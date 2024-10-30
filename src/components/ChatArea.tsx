@@ -1,7 +1,7 @@
-import { Copy, Image, Plus, Send } from "lucide-react";
+import { Copy, Image, MessageSquare, Plus, Send } from "lucide-react";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from "react-syntax-highlighter";
 import docco from "react-syntax-highlighter/dist/cjs/styles/hljs/docco";
 import vs2015 from "react-syntax-highlighter/dist/cjs/styles/hljs/vs2015";
 import type { Chat } from "../types";
@@ -11,6 +11,7 @@ interface ChatAreaProps {
 	chats: Chat[];
 	onSendMessage: (content: string, type: "text" | "image") => void;
 	onModelChange: (model: "gpt-4o" | "gpt-4o-mini") => void;
+	onImageModelChange: (model: "dall-e-2" | "dall-e-3") => void;
 	onNewChat: () => void;
 	theme: "light" | "dark" | "system";
 }
@@ -20,6 +21,7 @@ export default function ChatArea({
 	chats,
 	onSendMessage,
 	onModelChange,
+	onImageModelChange,
 	onNewChat,
 	theme,
 }: ChatAreaProps) {
@@ -95,17 +97,37 @@ export default function ChatArea({
 
 	return (
 		<div className="flex-1 flex flex-col h-screen bg-white dark:bg-gray-900 md:h-auto">
-			<div className="p-4 border-b border-gray-200 dark:border-gray-700">
-				<select
-					value={chat.model}
-					onChange={(e) =>
-						onModelChange(e.target.value as "gpt-4o" | "gpt-4o-mini")
-					}
-					className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1 text-black dark:text-white"
-				>
-					<option value="gpt-4o">gpt-4o</option>
-					<option value="gpt-4o-mini">gpt-4o mini</option>
-				</select>
+			<div className="p-4 border-b border-gray-200 dark:border-gray-700 flex gap-2 justify-between md:justify-end">
+				<div className="flex items-center gap-2">
+					<MessageSquare
+						size={20}
+						className="text-gray-600 dark:text-gray-400"
+					/>
+					<select
+						value={chat.model}
+						onChange={(e) =>
+							onModelChange(e.target.value as "gpt-4o" | "gpt-4o-mini")
+						}
+						className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1 text-black dark:text-white"
+					>
+						<option value="gpt-4o">🧠 GPT-4o</option>
+						<option value="gpt-4o-mini">⚡ GPT-4o mini</option>
+					</select>
+				</div>
+
+				<div className="flex items-center gap-2">
+					<Image size={20} className="text-gray-600 dark:text-gray-400" />
+					<select
+						value={chat.imageModel}
+						onChange={(e) =>
+							onImageModelChange(e.target.value as "dall-e-2" | "dall-e-3")
+						}
+						className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1 text-black dark:text-white"
+					>
+						<option value="dall-e-3">🧠 DALL-E 3</option>
+						<option value="dall-e-2">⚡ DALL-E 2</option>
+					</select>
+				</div>
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900">
