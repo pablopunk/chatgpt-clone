@@ -29,18 +29,25 @@ export default function ChatArea({
 	const [isError, setIsError] = React.useState(false);
 	const messagesEndRef = React.useRef<HTMLDivElement>(null);
 	const [copySuccess, setCopySuccess] = React.useState("");
+	const [clientChat, setClientChat] = React.useState<Chat | null>(null);
+	const [clientChats, setClientChats] = React.useState<Chat[]>([]);
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	React.useEffect(() => {
 		scrollToBottom();
-	}, [chat?.messages]);
+	}, [clientChat?.messages]);
+
+	React.useEffect(() => {
+		// Set chat on the client side
+		setClientChat(chat);
+		setClientChats(chats);
+	}, [chat, chats]);
 
 	const effectiveTheme = React.useMemo(() => {
-		if (theme === "system") {
+		if (theme === "system" && typeof window !== "undefined") {
 			const systemPrefersDark = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			).matches;
@@ -57,10 +64,10 @@ export default function ChatArea({
 		setTimeout(() => setCopySuccess(""), 2000); // Clear message after 2 seconds
 	};
 
-	if (!chat) {
+	if (!clientChat) {
 		return (
 			<div className="flex-1 flex flex-col items-center justify-center">
-				{chats.length > 0 && (
+				{clientChats.length > 0 && (
 					<p className="text-gray-600 dark:text-gray-400 mb-4">
 						Select a chat from the list or
 					</p>
@@ -93,7 +100,7 @@ export default function ChatArea({
 	};
 
 	// Get all messages except the initial system message for display
-	const displayMessages = chat.messages.slice(1);
+	const displayMessages = clientChat.messages.slice(1);
 
 	return (
 		<div className="flex-1 flex flex-col h-screen bg-white dark:bg-gray-900 md:h-auto">
@@ -104,7 +111,7 @@ export default function ChatArea({
 						className="text-gray-600 dark:text-gray-400"
 					/>
 					<select
-						value={chat.model}
+						value={clientChat.model}
 						onChange={(e) =>
 							onModelChange(e.target.value as "gpt-4o" | "gpt-4o-mini")
 						}
@@ -118,7 +125,7 @@ export default function ChatArea({
 				<div className="flex items-center gap-2">
 					<Image size={20} className="text-gray-600 dark:text-gray-400" />
 					<select
-						value={chat.imageModel}
+						value={clientChat.imageModel}
 						onChange={(e) =>
 							onImageModelChange(e.target.value as "dall-e-2" | "dall-e-3")
 						}

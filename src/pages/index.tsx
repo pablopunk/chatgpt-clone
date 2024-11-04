@@ -1,10 +1,10 @@
+import ChatArea from "@/components/ChatArea";
+import SettingsModal from "@/components/SettingsModal";
+import Sidebar from "@/components/Sidebar";
+import type { Chat, ChatState, Message } from "@/types";
 import { nanoid } from "nanoid";
 import OpenAI from "openai";
 import React from "react";
-import ChatArea from "./components/ChatArea";
-import SettingsModal from "./components/SettingsModal";
-import Sidebar from "./components/Sidebar";
-import type { Chat, ChatState, Message } from "./types";
 
 const STORAGE_KEY = "chatgpt-client-state";
 
@@ -16,15 +16,20 @@ const initialState: ChatState = {
 
 function App() {
 	const [state, setState] = React.useState<ChatState>(() => {
-		const saved = localStorage.getItem(STORAGE_KEY);
-		return saved ? JSON.parse(saved) : initialState;
+		if (typeof window !== "undefined") {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			return saved ? JSON.parse(saved) : initialState;
+		}
+		return initialState;
 	});
 
 	const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
 	const [settingsError, setSettingsError] = React.useState("");
 
 	React.useEffect(() => {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+		if (typeof window !== "undefined") {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+		}
 	}, [state]);
 
 	const currentChat =
@@ -43,7 +48,8 @@ function App() {
 			messages: [
 				{
 					role: "system",
-					content: "You are a helpful assistant.",
+					content:
+						"You are a helpful assistant. Be brief. Be concise. Be right.",
 				},
 			],
 			model: "gpt-4o",
@@ -151,13 +157,23 @@ function App() {
 					const response = await openai.images.generate({
 						prompt: imagePrompt,
 						n: 1,
-						size: "1024x1024",
+						size:
+							currentChat.imageModel === "dall-e-3" ? "1024x1024" : "512x512",
 						model: currentChat.imageModel,
 					});
 
-					const imageUrl = response.data[0].url;
+					const openaiImageUrl = response.data[0].url;
 
-					// Update the assistant's message with the image
+					// Upload the image to ImageKit via your API endpoint
+					const uploadResponse = await fetch("/api/images/upload", {
+						method: "POST",
+						body: JSON.stringify({ imageUrl: openaiImageUrl }),
+					});
+
+					const jsonResponse = await uploadResponse.json();
+					const imageUrl = jsonResponse.url;
+
+					// Update the assistant's message with the new ImageKit URL
 					setState((prev) => ({
 						...prev,
 						chats: prev.chats.map((chat) =>
@@ -168,7 +184,6 @@ function App() {
 											msg.id === assistantMessageId
 												? {
 														...msg,
-														role: "assistant",
 														content: "Here's your generated image:",
 														imageUrl: imageUrl,
 														type,
@@ -331,7 +346,9 @@ function App() {
 				isOpen={isSettingsModalOpen}
 				onClose={() => setIsSettingsModalOpen(false)}
 				apiKey={state.apiKey}
-				onApiKeyUpdate={(apiKey) => setState((prev) => ({ ...prev, apiKey }))}
+				onApiKeyUpdate={(apiKey: string) =>
+					setState((prev) => ({ ...prev, apiKey }))
+				}
 				theme={theme}
 				setTheme={setTheme}
 				errorMessage={settingsError}
