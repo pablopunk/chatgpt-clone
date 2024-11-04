@@ -147,7 +147,7 @@ function App() {
 				stream: type === "text",
 			});
 
-			if (type === "image") {
+			if (type === "image" && "choices" in completion) {
 				const functionCall = completion.choices[0].message?.function_call;
 				if (functionCall && functionCall.name === "generate_image") {
 					const functionArgs = JSON.parse(functionCall.arguments || "{}");
@@ -201,7 +201,8 @@ function App() {
 
 				let streamedContent = "";
 
-				for await (const chunk of stream) {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				for await (const chunk of stream as any) {
 					const content = chunk.choices[0]?.delta?.content || "";
 					streamedContent += content;
 

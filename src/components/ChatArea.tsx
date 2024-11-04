@@ -161,13 +161,13 @@ export default function ChatArea({
 							) : message.content ? (
 								<ReactMarkdown
 									components={{
-										code({ node, inline, className, children, ...props }) {
+										code({ node, className, children, ...props }) {
 											const match = /language-(\w+)/.exec(className || "");
 											const codeContent = String(children).replace(/\n$/, "");
 											const syntaxTheme =
 												effectiveTheme === "dark" ? vs2015 : docco;
 
-											if (inline || !match) {
+											if (!match) {
 												return (
 													<code className={className} {...props}>
 														{children}
@@ -190,10 +190,12 @@ export default function ChatArea({
 														)}
 													</button>
 													<SyntaxHighlighter
-														style={syntaxTheme}
+														// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+														style={syntaxTheme as any}
 														language={match[1]}
 														PreTag="div"
-														{...props}
+														// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+														{...(props as any)}
 													>
 														{codeContent}
 													</SyntaxHighlighter>
