@@ -3,7 +3,6 @@ import SettingsModal from "@/components/SettingsModal";
 import Sidebar from "@/components/Sidebar";
 import type { Chat, ChatState, Message } from "@/types";
 import { nanoid } from "nanoid";
-import OpenAI from "openai";
 import React from "react";
 
 const STORAGE_KEY = "chatgpt-client-state";
@@ -71,21 +70,14 @@ function App() {
 			return;
 		}
 
-		const openai = new OpenAI({
-			apiKey: state.apiKey,
-			dangerouslyAllowBrowser: true,
-		});
-
 		const newMessage: Message = {
 			role: "user",
 			content,
 			type,
 		};
 
-		// Create a temporary ID for the assistant's message
 		const assistantMessageId = nanoid();
 
-		// Update state with user message and prepare for assistant's response
 		setState((prev) => ({
 			...prev,
 			chats: prev.chats.map((chat) =>
@@ -117,112 +109,46 @@ function App() {
 
 			apiMessages.push({ role: "user", content });
 
-			// Define function for image generation
-			const functions =
-				type === "image"
-					? [
-							{
-								name: "generate_image",
-								description: "Generates an image based on the conversation",
-								parameters: {
-									type: "object",
-									properties: {
-										prompt: {
-											type: "string",
-											description: "The prompt for the image generation",
-										},
-									},
-									required: ["prompt"],
-								},
-							},
-						]
-					: undefined;
-
-			const completion = await openai.chat.completions.create({
-				model: currentChat.model === "gpt-4o" ? "gpt-4" : "gpt-3.5-turbo",
-				messages: apiMessages,
-				functions,
-				function_call:
-					type === "image" ? { name: "generate_image" } : undefined,
-				stream: type === "text",
+			const response = await fetch("/api/chat", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					messages: apiMessages,
+					model: currentChat.model === "gpt-4o" ? "gpt-4" : "gpt-3.5-turbo",
+					imageModel: currentChat.imageModel,
+					type,
+					openaiApiKey: state.apiKey,
+				}),
 			});
 
-			if (type === "image" && "choices" in completion) {
-				const functionCall = completion.choices[0].message?.function_call;
-				if (functionCall && functionCall.name === "generate_image") {
-					const functionArgs = JSON.parse(functionCall.arguments || "{}");
-					const imagePrompt = functionArgs.prompt || content;
+			const data = await response.json();
 
-					// Call the image generation API
-					const response = await openai.images.generate({
-						prompt: imagePrompt,
-						n: 1,
-						size:
-							currentChat.imageModel === "dall-e-3" ? "1024x1024" : "512x512",
-						model: currentChat.imageModel,
-					});
-
-					const openaiImageUrl = response.data[0].url;
-
-					// Upload the image to ImageKit via your API endpoint
-					const uploadResponse = await fetch("/api/images/upload", {
-						method: "POST",
-						body: JSON.stringify({ imageUrl: openaiImageUrl }),
-					});
-
-					const jsonResponse = await uploadResponse.json();
-					const imageUrl = jsonResponse.url;
-
-					// Update the assistant's message with the new ImageKit URL
-					setState((prev) => ({
-						...prev,
-						chats: prev.chats.map((chat) =>
-							chat.id === currentChat.id
-								? {
-										...chat,
-										messages: chat.messages.map((msg) =>
-											msg.id === assistantMessageId
-												? {
-														...msg,
-														content: "Here's your generated image:",
-														imageUrl: imageUrl,
-														type,
-													}
-												: msg,
-										),
-									}
-								: chat,
-						),
-					}));
-				}
-			} else {
-				// Handle streaming text response
-				const stream = completion;
-
-				let streamedContent = "";
-
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				for await (const chunk of stream as any) {
-					const content = chunk.choices[0]?.delta?.content || "";
-					streamedContent += content;
-
-					setState((prev) => ({
-						...prev,
-						chats: prev.chats.map((chat) =>
-							chat.id === currentChat.id
-								? {
-										...chat,
-										messages: chat.messages.map((msg) =>
-											msg.id === assistantMessageId
-												? { ...msg, content: streamedContent, type }
-												: msg,
-										),
-									}
-								: chat,
-						),
-					}));
-				}
+			if (!response.ok) {
+				throw new Error(data.error || "Failed to get response");
 			}
+
+			setState((prev) => ({
+				...prev,
+				chats: prev.chats.map((chat) =>
+					chat.id === currentChat.id
+						? {
+								...chat,
+								messages: chat.messages.map((msg) =>
+									msg.id === assistantMessageId
+										? {
+												...msg,
+												content: data.content,
+												imageUrl: data.imageUrl,
+												type: data.type,
+											}
+										: msg,
+								),
+							}
+						: chat,
+				),
+			}));
 		} catch (error) {
 			console.error("Error:", error);
 
@@ -271,12 +197,10 @@ function App() {
 		}));
 	};
 
-	// Add theme state
 	const [theme, setTheme] = React.useState<"light" | "dark" | "system">(
 		"system",
 	);
 
-	// Load theme from localStorage on mount
 	React.useEffect(() => {
 		const savedTheme = localStorage.getItem("theme") as
 			| "light"
@@ -288,11 +212,9 @@ function App() {
 		}
 	}, []);
 
-	// Apply theme to document root
 	React.useEffect(() => {
 		const root = document.documentElement;
 
-		// Remove all theme classes
 		root.classList.remove("light", "dark");
 
 		if (theme === "light") {
@@ -300,14 +222,12 @@ function App() {
 		} else if (theme === "dark") {
 			root.classList.add("dark");
 		} else {
-			// 'system' preference
 			const systemDark = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			).matches;
 			root.classList.add(systemDark ? "dark" : "light");
 		}
 
-		// Save theme to localStorage
 		localStorage.setItem("theme", theme);
 	}, [theme]);
 

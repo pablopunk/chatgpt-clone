@@ -41,7 +41,6 @@ export default function ChatArea({
 	}, [clientChat?.messages]);
 
 	React.useEffect(() => {
-		// Set chat on the client side
 		setClientChat(chat);
 		setClientChats(chats);
 	}, [chat, chats]);
@@ -61,7 +60,7 @@ export default function ChatArea({
 			() => setCopySuccess("Copied!"),
 			() => setCopySuccess("Failed to copy!"),
 		);
-		setTimeout(() => setCopySuccess(""), 2000); // Clear message after 2 seconds
+		setTimeout(() => setCopySuccess(""), 2000);
 	};
 
 	if (!clientChat) {
@@ -99,7 +98,6 @@ export default function ChatArea({
 		if (isError) setIsError(false);
 	};
 
-	// Get all messages except the initial system message for display
 	const displayMessages = clientChat.messages.slice(1);
 
 	return (
@@ -190,12 +188,12 @@ export default function ChatArea({
 														)}
 													</button>
 													<SyntaxHighlighter
-														// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-														style={syntaxTheme as any}
+														// @ts-ignore
+														style={syntaxTheme}
 														language={match[1]}
 														PreTag="div"
-														// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-														{...(props as any)}
+														// @ts-ignore
+														{...props}
 													>
 														{codeContent}
 													</SyntaxHighlighter>
