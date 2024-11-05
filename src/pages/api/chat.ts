@@ -69,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT as string,
                 });
 
-                const fetchResponse = await fetch(openaiImageUrl);
+                const fetchResponse = await fetch(openaiImageUrl as string);
                 if (!fetchResponse.ok) {
                     throw new Error('Failed to fetch image from OpenAI');
                 }
