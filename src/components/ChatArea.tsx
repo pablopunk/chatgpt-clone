@@ -189,13 +189,12 @@ export default function ChatArea({
 							} ${editingMessageIndex === index + 1 ? "opacity-50 blur-[2px]" : ""}`}
 						>
 							{message.role === "user" && (
-								<div className="absolute left-0 top-0 -ml-12 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+								<div className="absolute left-0 top-0 -ml-12 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
 									<button
 										type="button"
 										onClick={() => {
 											setInput(message.content);
 											setEditingMessageIndex(index + 1);
-											// Focus the input
 											const inputElement = document.querySelector(
 												'input[type="text"]',
 											) as HTMLInputElement;
