@@ -126,7 +126,7 @@ export default function ChatArea({
 			return;
 		}
 		setIsError(false);
-		onSendMessage(input, type, editingMessageIndex);
+		onSendMessage(input, type, editingMessageIndex ?? undefined);
 		setInput("");
 		setEditingMessageIndex(null);
 	};
