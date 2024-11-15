@@ -63,7 +63,11 @@ function App() {
 		}));
 	};
 
-	const handleSendMessage = async (content: string, type: "text" | "image") => {
+	const handleSendMessage = async (
+		content: string,
+		type: "text" | "image",
+		messageIndex?: number,
+	) => {
 		if (!state.apiKey || !currentChat) {
 			setSettingsError("API key is required to send messages.");
 			setIsSettingsModalOpen(true);
@@ -84,16 +88,28 @@ function App() {
 				chat.id === currentChat.id
 					? {
 							...chat,
-							messages: [
-								...chat.messages,
-								newMessage,
-								{
-									role: "assistant",
-									content: "",
-									id: assistantMessageId,
-									type,
-								},
-							],
+							messages:
+								messageIndex !== undefined
+									? [
+											...chat.messages.slice(0, messageIndex),
+											newMessage,
+											{
+												role: "assistant",
+												content: "",
+												id: assistantMessageId,
+												type,
+											},
+										]
+									: [
+											...chat.messages,
+											newMessage,
+											{
+												role: "assistant",
+												content: "",
+												id: assistantMessageId,
+												type,
+											},
+										],
 							title:
 								chat.messages.length === 1 ? content.slice(0, 30) : chat.title,
 						}
@@ -126,6 +142,7 @@ function App() {
 			const data = await response.json();
 
 			if (!response.ok) {
+				console.error("Error:", data);
 				throw new Error(data.error || "Failed to get response");
 			}
 
@@ -239,6 +256,25 @@ function App() {
 		}));
 	};
 
+	const handleDeleteMessage = (messageIndex: number) => {
+		if (!currentChat) return;
+
+		setState((prev) => ({
+			...prev,
+			chats: prev.chats.map((chat) =>
+				chat.id === currentChat.id
+					? {
+							...chat,
+							messages: [
+								...chat.messages.slice(0, messageIndex),
+								...chat.messages.slice(messageIndex + 2),
+							],
+						}
+					: chat,
+			),
+		}));
+	};
+
 	return (
 		<div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 md:flex-row">
 			<Sidebar
@@ -262,6 +298,21 @@ function App() {
 				onImageModelChange={handleImageModelChange}
 				onNewChat={() => createNewChat(true)}
 				theme={theme}
+				onDeleteMessage={handleDeleteMessage}
+				onEditMessage={(messageIndex: number) => {
+					if (!currentChat) return;
+					setState((prev) => ({
+						...prev,
+						chats: prev.chats.map((chat) =>
+							chat.id === currentChat.id
+								? {
+										...chat,
+										messages: chat.messages.slice(0, messageIndex),
+									}
+								: chat,
+						),
+					}));
+				}}
 			/>
 			<SettingsModal
 				isOpen={isSettingsModalOpen}
