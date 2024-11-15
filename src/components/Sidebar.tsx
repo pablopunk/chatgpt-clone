@@ -79,17 +79,15 @@ export default function Sidebar({
 			{/* Desktop Chat List */}
 			<div className="flex-1 overflow-y-auto hidden md:block">
 				{clientChats.map((chat) => (
-					<div
+					<button
 						key={chat.id}
-						className={`flex items-center gap-2 p-2 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors ${
+						type="button"
+						onClick={() => onChatSelect(chat.id)}
+						className={`flex justify-between items-center gap-2 p-2 w-full text-left text-black dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors ${
 							chat.id === currentChatId ? "bg-gray-300 dark:bg-gray-700" : ""
 						}`}
 					>
-						<button
-							type="button"
-							onClick={() => onChatSelect(chat.id)}
-							className="flex-1 text-left flex items-center gap-2 text-black dark:text-white"
-						>
+						<div className="flex items-center gap-2">
 							<MessageSquare size={20} />
 							<span
 								className="truncate max-w-[170px]"
@@ -97,15 +95,18 @@ export default function Sidebar({
 							>
 								{chat.title || "New Chat"}
 							</span>
-						</button>
+						</div>
 						<button
 							type="button"
-							onClick={() => onRemoveChat(chat.id)}
+							onClick={(e) => {
+								e.stopPropagation();
+								onRemoveChat(chat.id);
+							}}
 							className="p-2 text-white hover:text-red-700 transition-colors"
 						>
 							<Trash size={20} />
 						</button>
-					</div>
+					</button>
 				))}
 			</div>
 
